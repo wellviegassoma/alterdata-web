@@ -46,6 +46,7 @@ export function EmpresaSearch({ defaultEmpresaId, defaultCnpjCpf, cnpjCpfEditave
   return (
     <div className="flex flex-col gap-2">
       <input type="hidden" name="alterdataEmpresaId" value={selecionada?.id ?? ''} />
+      <input type="hidden" name="nome" value={selecionada?.nome ?? ''} />
 
       {selecionada ? (
         <div className="flex items-center justify-between rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm">

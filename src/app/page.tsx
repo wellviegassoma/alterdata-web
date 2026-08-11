@@ -35,7 +35,7 @@ export default async function DashboardPage() {
               {clientes.map((cliente) => (
                 <li key={cliente.id} className="flex items-center justify-between py-2">
                   <Link href={`/clientes/${cliente.cnpjCpf}`} className="hover:underline">
-                    {cliente.cnpjCpf}
+                    {cliente.nomeFantasia || cliente.nome || cliente.cnpjCpf}
                   </Link>
                   <span className="text-slate-500">{cliente.status}</span>
                 </li>

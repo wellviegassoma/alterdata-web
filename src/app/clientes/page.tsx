@@ -3,6 +3,8 @@ import { apiFetch } from '@/lib/api';
 import { requireUser } from '@/lib/require-user';
 import type { Cliente, StatusCliente } from '@/lib/types';
 import { AppHeader } from '@/components/AppHeader';
+import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
+import { importarAtivosAction } from './actions';
 
 const STATUS_LABEL: Record<StatusCliente, string> = {
   ATIVO: 'Ativo',
@@ -14,9 +16,9 @@ const STATUS_LABEL: Record<StatusCliente, string> = {
 export default async function ClientesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; importados?: string; jaExistiam?: string; total?: string }>;
 }) {
-  const { status } = await searchParams;
+  const { status, importados, jaExistiam, total } = await searchParams;
   const user = await requireUser();
   const clientes = await apiFetch<Cliente[]>(`/clientes${status ? `?status=${status}` : ''}`);
 
@@ -26,13 +28,30 @@ export default async function ClientesPage({
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-8">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold text-slate-900">Clientes</h1>
-          <Link
-            href="/clientes/novo"
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-          >
-            Novo cliente
-          </Link>
+          <div className="flex gap-2">
+            <form action={importarAtivosAction}>
+              <ConfirmSubmitButton
+                confirmMessage="Importar do eContador todo cliente ativo que ainda não existir aqui? Isso cria registros básicos (nome, CNPJ, vínculo) para você completar depois."
+                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Importar do eContador
+              </ConfirmSubmitButton>
+            </form>
+            <Link
+              href="/clientes/novo"
+              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+            >
+              Novo cliente
+            </Link>
+          </div>
         </div>
+
+        {importados !== undefined && (
+          <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            Importação concluída: <strong>{importados}</strong> cliente(s) novo(s) trazido(s) do
+            eContador ({jaExistiam} já existiam de {total} ativos encontrados).
+          </p>
+        )}
 
         <div className="flex gap-2 text-sm">
           {(['', 'ATIVO', 'EM_ONBOARDING', 'EM_OFFBOARDING', 'INATIVO'] as const).map((s) => (
@@ -57,6 +76,7 @@ export default async function ClientesPage({
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-500">
+                  <th className="px-6 py-3 font-medium">Nome</th>
                   <th className="px-6 py-3 font-medium">CNPJ/CPF</th>
                   <th className="px-6 py-3 font-medium">Contato principal</th>
                   <th className="px-6 py-3 font-medium">Responsável</th>
@@ -73,9 +93,10 @@ export default async function ClientesPage({
                           href={`/clientes/${cliente.cnpjCpf}`}
                           className="font-medium text-slate-900 hover:underline"
                         >
-                          {cliente.cnpjCpf}
+                          {cliente.nomeFantasia || cliente.nome || cliente.cnpjCpf}
                         </Link>
                       </td>
+                      <td className="px-6 py-3 text-slate-500">{cliente.cnpjCpf}</td>
                       <td className="px-6 py-3 text-slate-600">{principal?.nome ?? '—'}</td>
                       <td className="px-6 py-3 text-slate-600">
                         {cliente.responsavelInterno?.nome ?? '—'}

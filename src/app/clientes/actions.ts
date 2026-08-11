@@ -72,6 +72,8 @@ function buildPayload(formData: FormData) {
 
   return {
     alterdataEmpresaId: get('alterdataEmpresaId'),
+    nome: get('nome'),
+    nomeFantasia: get('nomeFantasia'),
     status: get('status'),
     observacoes: get('observacoes'),
     responsavelInternoId: get('responsavelInternoId'),
@@ -132,6 +134,22 @@ export async function deleteClienteAction(cnpjCpf: string) {
   await apiFetch(`/clientes/${cnpjCpf}`, { method: 'DELETE' });
   revalidatePath('/clientes');
   redirect('/clientes');
+}
+
+interface ImportarResultado {
+  totalAtivasNoEcontador: number;
+  importados: number;
+  jaExistiam: number;
+}
+
+export async function importarAtivosAction() {
+  const resultado = await apiFetch<ImportarResultado>('/clientes/importar-ativos', {
+    method: 'POST',
+  });
+  revalidatePath('/clientes');
+  redirect(
+    `/clientes?importados=${resultado.importados}&jaExistiam=${resultado.jaExistiam}&total=${resultado.totalAtivasNoEcontador}`,
+  );
 }
 
 function extrairMensagem(error: ApiError): string {

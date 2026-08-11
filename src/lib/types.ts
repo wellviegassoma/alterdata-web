@@ -63,6 +63,8 @@ export interface Cliente {
   id: string;
   cnpjCpf: string;
   alterdataEmpresaId: string | null;
+  nome: string | null;
+  nomeFantasia: string | null;
   status: StatusCliente;
   observacoes: string | null;
   responsavelInternoId: string | null;

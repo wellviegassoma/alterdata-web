@@ -8,7 +8,7 @@ export function AppHeader({ user }: { user: AuthenticatedUser }) {
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
         <nav className="flex items-center gap-6">
           <Link href="/" className="text-sm font-semibold text-slate-900">
-            Escritório Contábil
+            SOMA Contabilidade
           </Link>
           <Link href="/clientes" className="text-sm text-slate-600 hover:text-slate-900">
             Clientes

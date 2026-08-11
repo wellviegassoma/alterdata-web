@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Escritório Contábil",
+  title: "SOMA Contabilidade",
   description: "Sistema de gestão do escritório",
 };
 
