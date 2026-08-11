@@ -34,11 +34,11 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     throw new ApiError(response.status, `Falha na API (${response.status})`, body);
   }
 
-  if (response.status === 204) {
+  const text = await response.text();
+  if (!text) {
     return undefined as T;
   }
-
-  return response.json() as Promise<T>;
+  return JSON.parse(text) as T;
 }
 
 /** Chamada de login não autenticada (sem cookie ainda). */
