@@ -17,10 +17,8 @@ export default async function ClientesPage({
   searchParams: Promise<{ status?: string }>;
 }) {
   const { status } = await searchParams;
-  const [user, clientes] = await Promise.all([
-    requireUser(),
-    apiFetch<Cliente[]>(`/clientes${status ? `?status=${status}` : ''}`),
-  ]);
+  const user = await requireUser();
+  const clientes = await apiFetch<Cliente[]>(`/clientes${status ? `?status=${status}` : ''}`);
 
   return (
     <div className="flex min-h-screen flex-col">

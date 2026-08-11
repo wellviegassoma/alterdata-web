@@ -11,8 +11,8 @@ export default async function EditarClientePage({
   params: Promise<{ cnpjCpf: string }>;
 }) {
   const { cnpjCpf } = await params;
-  const [user, cliente, usuarios] = await Promise.all([
-    requireUser(),
+  const user = await requireUser();
+  const [cliente, usuarios] = await Promise.all([
     apiFetch<Cliente>(`/clientes/${cnpjCpf}`),
     apiFetch<Usuario[]>('/usuarios-internos'),
   ]);

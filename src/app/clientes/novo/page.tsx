@@ -6,7 +6,8 @@ import { ClienteForm } from '../ClienteForm';
 import { createClienteAction } from '../actions';
 
 export default async function NovoClientePage() {
-  const [user, usuarios] = await Promise.all([requireUser(), apiFetch<Usuario[]>('/usuarios-internos')]);
+  const user = await requireUser();
+  const usuarios = await apiFetch<Usuario[]>('/usuarios-internos');
 
   return (
     <div className="flex min-h-screen flex-col">
