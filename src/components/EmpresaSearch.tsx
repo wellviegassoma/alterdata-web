@@ -7,14 +7,27 @@ interface Props {
   defaultEmpresaId?: string;
   defaultCnpjCpf?: string;
   cnpjCpfEditavel?: boolean;
+  /** Chamado quando os detalhes completos (nomeFantasia/código/endereço) chegam, para pré-preencher outros campos do form. */
+  onDetalhe?: (detalhe: { nomeFantasia?: string; codigo?: string; endereco?: string }) => void;
+}
+
+interface EmpresaDetalhe {
+  nomeFantasia?: string;
+  codigo?: string;
+  endereco?: string;
 }
 
 /**
  * Busca empresas do eContador por nome/CNPJ e preenche alterdataEmpresaId +
- * cnpjCpf ao selecionar. Os dois campos ficam disponíveis via inputs hidden
- * (lidos pelo Server Action no submit do formulário).
+ * cnpjCpf ao selecionar. Ao selecionar, busca também o detalhe completo
+ * (nome fantasia, código, endereço) para pré-preencher o resto do cadastro.
  */
-export function EmpresaSearch({ defaultEmpresaId, defaultCnpjCpf, cnpjCpfEditavel = true }: Props) {
+export function EmpresaSearch({
+  defaultEmpresaId,
+  defaultCnpjCpf,
+  cnpjCpfEditavel = true,
+  onDetalhe,
+}: Props) {
   const [query, setQuery] = useState('');
   const [resultados, setResultados] = useState<EmpresaResumo[]>([]);
   const [carregando, setCarregando] = useState(false);
@@ -24,6 +37,8 @@ export function EmpresaSearch({ defaultEmpresaId, defaultCnpjCpf, cnpjCpfEditave
       : null,
   );
   const [cnpjManual, setCnpjManual] = useState(defaultCnpjCpf ?? '');
+  const [detalhe, setDetalhe] = useState<EmpresaDetalhe | null>(null);
+  const [buscandoDetalhe, setBuscandoDetalhe] = useState(false);
 
   useEffect(() => {
     if (query.trim().length < 2) {
@@ -43,20 +58,48 @@ export function EmpresaSearch({ defaultEmpresaId, defaultCnpjCpf, cnpjCpfEditave
     return () => clearTimeout(timeout);
   }, [query]);
 
+  async function selecionar(empresa: EmpresaResumo) {
+    setSelecionada(empresa);
+    setCnpjManual(empresa.cpfCnpjAlfanumerico);
+    setQuery('');
+    setResultados([]);
+    setDetalhe(null);
+
+    setBuscandoDetalhe(true);
+    try {
+      const res = await fetch(`/api/empresas/${empresa.id}/detalhe`);
+      if (!res.ok) return;
+      const data: EmpresaDetalhe = await res.json();
+      setDetalhe(data);
+      onDetalhe?.(data);
+    } finally {
+      setBuscandoDetalhe(false);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-2">
       <input type="hidden" name="alterdataEmpresaId" value={selecionada?.id ?? ''} />
       <input type="hidden" name="nome" value={selecionada?.nome ?? ''} />
+      <input type="hidden" name="nomeFantasia" value={detalhe?.nomeFantasia ?? ''} />
+      <input type="hidden" name="codigo" value={detalhe?.codigo ?? ''} />
 
       {selecionada ? (
         <div className="flex items-center justify-between rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm">
           <span>
             {selecionada.nome || 'Empresa selecionada'}{' '}
             <span className="text-slate-500">({selecionada.cpfCnpjAlfanumerico})</span>
+            {buscandoDetalhe && <span className="ml-2 text-xs text-slate-400">carregando detalhes...</span>}
+            {detalhe?.codigo && (
+              <span className="ml-2 text-xs text-slate-500">código {detalhe.codigo}</span>
+            )}
           </span>
           <button
             type="button"
-            onClick={() => setSelecionada(null)}
+            onClick={() => {
+              setSelecionada(null);
+              setDetalhe(null);
+            }}
             className="text-xs font-medium text-slate-500 hover:text-slate-900"
           >
             Trocar
@@ -78,12 +121,7 @@ export function EmpresaSearch({ defaultEmpresaId, defaultCnpjCpf, cnpjCpfEditave
                 <li key={empresa.id}>
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelecionada(empresa);
-                      setCnpjManual(empresa.cpfCnpjAlfanumerico);
-                      setQuery('');
-                      setResultados([]);
-                    }}
+                    onClick={() => selecionar(empresa)}
                     className="block w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
                   >
                     {empresa.nome} <span className="text-slate-500">({empresa.cpfCnpjAlfanumerico})</span>

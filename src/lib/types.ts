@@ -48,6 +48,10 @@ export interface DadosFiscais {
   cnaePrincipal: string | null;
   inscricaoEstadual: string | null;
   inscricaoMunicipal: string | null;
+  /** Não vem do eContador — preenchido manualmente. */
+  capitalSocial: string | null;
+  /** Não vem do eContador — preenchido manualmente. */
+  dataAbertura: string | null;
 }
 
 export interface Contrato {
@@ -65,10 +69,15 @@ export interface Cliente {
   alterdataEmpresaId: string | null;
   nome: string | null;
   nomeFantasia: string | null;
+  codigo: string | null;
   status: StatusCliente;
   observacoes: string | null;
-  responsavelInternoId: string | null;
-  responsavelInterno: { id: string; nome: string; email: string; papel: PapelUsuario } | null;
+  responsavelFiscalId: string | null;
+  responsavelFiscal: { id: string; nome: string; email: string; papel: PapelUsuario } | null;
+  responsavelContabilId: string | null;
+  responsavelContabil: { id: string; nome: string; email: string; papel: PapelUsuario } | null;
+  responsavelDpId: string | null;
+  responsavelDp: { id: string; nome: string; email: string; papel: PapelUsuario } | null;
   contatos: Contato[];
   endereco: Endereco | null;
   dadosFiscais: DadosFiscais | null;

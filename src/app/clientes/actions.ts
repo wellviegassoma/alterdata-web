@@ -41,6 +41,8 @@ function buildPayload(formData: FormData) {
     cnaePrincipal: get('cnaePrincipal'),
     inscricaoEstadual: get('inscricaoEstadual'),
     inscricaoMunicipal: get('inscricaoMunicipal'),
+    capitalSocial: getNum('capitalSocial'),
+    dataAbertura: get('dataAbertura'),
   });
 
   const contrato = compact({
@@ -74,9 +76,12 @@ function buildPayload(formData: FormData) {
     alterdataEmpresaId: get('alterdataEmpresaId'),
     nome: get('nome'),
     nomeFantasia: get('nomeFantasia'),
+    codigo: get('codigo'),
     status: get('status'),
     observacoes: get('observacoes'),
-    responsavelInternoId: get('responsavelInternoId'),
+    responsavelFiscalId: get('responsavelFiscalId'),
+    responsavelContabilId: get('responsavelContabilId'),
+    responsavelDpId: get('responsavelDpId'),
     endereco: Object.keys(endereco).length ? endereco : undefined,
     dadosFiscais: Object.keys(dadosFiscais).length ? dadosFiscais : undefined,
     contrato: Object.keys(contrato).length ? contrato : undefined,
@@ -139,7 +144,8 @@ export async function deleteClienteAction(cnpjCpf: string) {
 interface ImportarResultado {
   totalAtivasNoEcontador: number;
   importados: number;
-  jaExistiam: number;
+  enriquecidos: number;
+  jaCompletos: number;
 }
 
 export async function importarAtivosAction() {
@@ -148,7 +154,7 @@ export async function importarAtivosAction() {
   });
   revalidatePath('/clientes');
   redirect(
-    `/clientes?importados=${resultado.importados}&jaExistiam=${resultado.jaExistiam}&total=${resultado.totalAtivasNoEcontador}`,
+    `/clientes?importados=${resultado.importados}&enriquecidos=${resultado.enriquecidos}&total=${resultado.totalAtivasNoEcontador}`,
   );
 }
 

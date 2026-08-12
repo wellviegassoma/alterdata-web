@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useRef } from 'react';
 import { EmpresaSearch } from '@/components/EmpresaSearch';
 import { ContatosField } from '@/components/ContatosField';
 import type { ClienteFormState } from './actions';
@@ -19,6 +19,7 @@ const initialState: ClienteFormState = {};
 export function ClienteForm({ action, usuarios, cliente }: Props) {
   const [state, formAction, pending] = useActionState(action, initialState);
   const modoEdicao = Boolean(cliente);
+  const ruaRef = useRef<HTMLInputElement>(null);
 
   return (
     <form action={formAction} className="flex flex-col gap-8">
@@ -29,10 +30,17 @@ export function ClienteForm({ action, usuarios, cliente }: Props) {
             <span className="text-sm font-medium text-slate-700">CNPJ/CPF</span>
             <p className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
               {cliente!.cnpjCpf} (não pode ser alterado)
+              {cliente!.codigo && ` · código ${cliente!.codigo}`}
             </p>
           </div>
         ) : (
-          <EmpresaSearch />
+          <EmpresaSearch
+            onDetalhe={(detalhe) => {
+              if (detalhe.endereco && ruaRef.current && !ruaRef.current.value) {
+                ruaRef.current.value = detalhe.endereco;
+              }
+            }}
+          />
         )}
       </section>
 
@@ -53,24 +61,29 @@ export function ClienteForm({ action, usuarios, cliente }: Props) {
             <option value="INATIVO">Inativo</option>
           </select>
         </div>
+      </section>
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor="responsavelInternoId" className="text-sm font-medium text-slate-700">
-            Responsável interno
-          </label>
-          <select
-            id="responsavelInternoId"
-            name="responsavelInternoId"
-            defaultValue={cliente?.responsavelInternoId ?? ''}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          >
-            <option value="">Nenhum</option>
-            {usuarios.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.nome}
-              </option>
-            ))}
-          </select>
+      <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-semibold text-slate-900">Responsáveis no escritório</h2>
+        <div className="grid grid-cols-3 gap-3">
+          <ResponsavelSelect
+            name="responsavelFiscalId"
+            label="Fiscal"
+            usuarios={usuarios}
+            defaultValue={cliente?.responsavelFiscalId ?? ''}
+          />
+          <ResponsavelSelect
+            name="responsavelContabilId"
+            label="Contábil"
+            usuarios={usuarios}
+            defaultValue={cliente?.responsavelContabilId ?? ''}
+          />
+          <ResponsavelSelect
+            name="responsavelDpId"
+            label="DP"
+            usuarios={usuarios}
+            defaultValue={cliente?.responsavelDpId ?? ''}
+          />
         </div>
       </section>
 
@@ -124,6 +137,7 @@ export function ClienteForm({ action, usuarios, cliente }: Props) {
             label="Rua"
             defaultValue={cliente?.endereco?.rua ?? ''}
             className="col-span-2"
+            inputRef={ruaRef}
           />
           <Campo name="numero" label="Número" defaultValue={cliente?.endereco?.numero ?? ''} />
           <Campo
@@ -138,7 +152,7 @@ export function ClienteForm({ action, usuarios, cliente }: Props) {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-semibold text-slate-900">Dados fiscais</h2>
+        <h2 className="text-sm font-semibold text-slate-900">Dados fiscais e registrais</h2>
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1">
             <label htmlFor="regimeTributario" className="text-sm font-medium text-slate-700">
@@ -173,7 +187,24 @@ export function ClienteForm({ action, usuarios, cliente }: Props) {
             label="Inscrição municipal"
             defaultValue={cliente?.dadosFiscais?.inscricaoMunicipal ?? ''}
           />
+          <Campo
+            name="capitalSocial"
+            label="Capital social (R$)"
+            type="number"
+            step="0.01"
+            defaultValue={cliente?.dadosFiscais?.capitalSocial ?? ''}
+          />
+          <Campo
+            name="dataAbertura"
+            label="Data de abertura/legalização"
+            type="date"
+            defaultValue={cliente?.dadosFiscais?.dataAbertura?.slice(0, 10) ?? ''}
+          />
         </div>
+        <p className="text-xs text-slate-400">
+          Capital social e data de abertura não vêm do eContador — a Alterdata não disponibiliza
+          esses dados pelo ePlugin, precisam ser preenchidos manualmente.
+        </p>
       </section>
 
       <section className="flex flex-col gap-4">
@@ -242,12 +273,46 @@ export function ClienteForm({ action, usuarios, cliente }: Props) {
   );
 }
 
+function ResponsavelSelect({
+  name,
+  label,
+  usuarios,
+  defaultValue,
+}: {
+  name: string;
+  label: string;
+  usuarios: Usuario[];
+  defaultValue: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={name} className="text-sm font-medium text-slate-700">
+        {label}
+      </label>
+      <select
+        id={name}
+        name={name}
+        defaultValue={defaultValue}
+        className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+      >
+        <option value="">Nenhum</option>
+        {usuarios.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.nome}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function Campo({
   name,
   label,
   defaultValue,
   type = 'text',
   className,
+  inputRef,
   ...rest
 }: {
   name: string;
@@ -255,6 +320,7 @@ function Campo({
   defaultValue?: string | number;
   type?: string;
   className?: string;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className={`flex flex-col gap-1 ${className ?? ''}`}>
@@ -266,6 +332,7 @@ function Campo({
         name={name}
         type={type}
         defaultValue={defaultValue}
+        ref={inputRef}
         className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
         {...rest}
       />

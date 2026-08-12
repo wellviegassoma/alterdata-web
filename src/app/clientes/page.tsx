@@ -16,9 +16,14 @@ const STATUS_LABEL: Record<StatusCliente, string> = {
 export default async function ClientesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; importados?: string; jaExistiam?: string; total?: string }>;
+  searchParams: Promise<{
+    status?: string;
+    importados?: string;
+    enriquecidos?: string;
+    total?: string;
+  }>;
 }) {
-  const { status, importados, jaExistiam, total } = await searchParams;
+  const { status, importados, enriquecidos, total } = await searchParams;
   const user = await requireUser();
   const clientes = await apiFetch<Cliente[]>(`/clientes${status ? `?status=${status}` : ''}`);
 
@@ -31,7 +36,7 @@ export default async function ClientesPage({
           <div className="flex gap-2">
             <form action={importarAtivosAction}>
               <ConfirmSubmitButton
-                confirmMessage="Importar do eContador todo cliente ativo que ainda não existir aqui? Isso cria registros básicos (nome, CNPJ, vínculo) para você completar depois."
+                confirmMessage="Importar/sincronizar com o eContador? Isso cria os clientes ativos que ainda não existirem aqui e completa nome/código/endereço de quem já existe."
                 className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
               >
                 Importar do eContador
@@ -48,8 +53,9 @@ export default async function ClientesPage({
 
         {importados !== undefined && (
           <p className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            Importação concluída: <strong>{importados}</strong> cliente(s) novo(s) trazido(s) do
-            eContador ({jaExistiam} já existiam de {total} ativos encontrados).
+            Sincronização concluída: <strong>{importados}</strong> cliente(s) novo(s),{' '}
+            <strong>{enriquecidos}</strong> completado(s) com dados do eContador (de {total} ativos
+            encontrados).
           </p>
         )}
 
@@ -76,10 +82,10 @@ export default async function ClientesPage({
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-500">
+                  <th className="px-6 py-3 font-medium">Código</th>
                   <th className="px-6 py-3 font-medium">Nome</th>
                   <th className="px-6 py-3 font-medium">CNPJ/CPF</th>
                   <th className="px-6 py-3 font-medium">Contato principal</th>
-                  <th className="px-6 py-3 font-medium">Responsável</th>
                   <th className="px-6 py-3 font-medium">Status</th>
                 </tr>
               </thead>
@@ -88,6 +94,7 @@ export default async function ClientesPage({
                   const principal = cliente.contatos.find((c) => c.principal) ?? cliente.contatos[0];
                   return (
                     <tr key={cliente.id} className="border-b border-slate-100 last:border-0">
+                      <td className="px-6 py-3 text-slate-500">{cliente.codigo ?? '—'}</td>
                       <td className="px-6 py-3">
                         <Link
                           href={`/clientes/${cliente.cnpjCpf}`}
@@ -98,9 +105,6 @@ export default async function ClientesPage({
                       </td>
                       <td className="px-6 py-3 text-slate-500">{cliente.cnpjCpf}</td>
                       <td className="px-6 py-3 text-slate-600">{principal?.nome ?? '—'}</td>
-                      <td className="px-6 py-3 text-slate-600">
-                        {cliente.responsavelInterno?.nome ?? '—'}
-                      </td>
                       <td className="px-6 py-3 text-slate-600">{STATUS_LABEL[cliente.status]}</td>
                     </tr>
                   );

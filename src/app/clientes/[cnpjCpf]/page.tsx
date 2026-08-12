@@ -79,9 +79,12 @@ export default async function ClienteDetalhePage({
           </p>
         )}
 
-        <Secao titulo="Status e responsável">
+        <Secao titulo="Status e responsáveis">
+          <Campo label="Código" valor={local.codigo} />
           <Campo label="Status" valor={local.status} />
-          <Campo label="Responsável interno" valor={local.responsavelInterno?.nome} />
+          <Campo label="Responsável Fiscal" valor={local.responsavelFiscal?.nome} />
+          <Campo label="Responsável Contábil" valor={local.responsavelContabil?.nome} />
+          <Campo label="Responsável DP" valor={local.responsavelDp?.nome} />
           <Campo label="Observações" valor={local.observacoes} />
           <Campo
             label="Tags"
@@ -119,11 +122,16 @@ export default async function ClienteDetalhePage({
         )}
 
         {local.dadosFiscais && (
-          <Secao titulo="Dados fiscais">
+          <Secao titulo="Dados fiscais e registrais">
             <Campo label="Regime tributário" valor={local.dadosFiscais.regimeTributario} />
             <Campo label="CNAE principal" valor={local.dadosFiscais.cnaePrincipal} />
             <Campo label="Inscrição estadual" valor={local.dadosFiscais.inscricaoEstadual} />
             <Campo label="Inscrição municipal" valor={local.dadosFiscais.inscricaoMunicipal} />
+            <Campo
+              label="Capital social"
+              valor={local.dadosFiscais.capitalSocial ? `R$ ${local.dadosFiscais.capitalSocial}` : undefined}
+            />
+            <Campo label="Data de abertura" valor={local.dadosFiscais.dataAbertura?.slice(0, 10)} />
           </Secao>
         )}
 
