@@ -60,7 +60,7 @@ export default async function ClienteDetalhePage({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-slate-900">
-              {econtador?.nomeFantasia || econtador?.nome || cnpjCpf}
+              {econtador?.nome || econtador?.nomeFantasia || cnpjCpf}
             </h1>
             <p className="text-sm text-slate-500">{cnpjCpf}</p>
           </div>

@@ -13,13 +13,21 @@ export function AppHeader({ user }: { user: AuthenticatedUser }) {
           <Link href="/clientes" className="text-sm text-slate-600 hover:text-slate-900">
             Clientes
           </Link>
+          <Link href="/documentos" className="text-sm text-slate-600 hover:text-slate-900">
+            Documentos
+          </Link>
           <Link href="/tipos-documento" className="text-sm text-slate-600 hover:text-slate-900">
             Tipos de documento
           </Link>
           {user.papel === 'ADMIN' && (
-            <Link href="/usuarios" className="text-sm text-slate-600 hover:text-slate-900">
-              Usuários
-            </Link>
+            <>
+              <Link href="/usuarios" className="text-sm text-slate-600 hover:text-slate-900">
+                Usuários
+              </Link>
+              <Link href="/backup" className="text-sm text-slate-600 hover:text-slate-900">
+                Backup
+              </Link>
+            </>
           )}
         </nav>
         <div className="flex items-center gap-4">

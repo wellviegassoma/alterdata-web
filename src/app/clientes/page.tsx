@@ -25,7 +25,9 @@ export default async function ClientesPage({
 }) {
   const { status, importados, enriquecidos, total } = await searchParams;
   const user = await requireUser();
-  const clientes = await apiFetch<Cliente[]>(`/clientes${status ? `?status=${status}` : ''}`);
+  const clientes = await apiFetch<Cliente[]>(
+    `/clientes?take=2000${status ? `&status=${status}` : ''}`,
+  );
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -34,6 +36,12 @@ export default async function ClientesPage({
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold text-slate-900">Clientes</h1>
           <div className="flex gap-2">
+            <a
+              href={`/api/export/clientes${status ? `?status=${status}` : ''}`}
+              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Exportar Excel
+            </a>
             <form action={importarAtivosAction}>
               <ConfirmSubmitButton
                 confirmMessage="Importar/sincronizar com o eContador? Isso cria os clientes ativos que ainda não existirem aqui e completa nome/código/endereço de quem já existe."
@@ -100,7 +108,7 @@ export default async function ClientesPage({
                           href={`/clientes/${cliente.cnpjCpf}`}
                           className="font-medium text-slate-900 hover:underline"
                         >
-                          {cliente.nomeFantasia || cliente.nome || cliente.cnpjCpf}
+                          {cliente.nome || cliente.nomeFantasia || cliente.cnpjCpf}
                         </Link>
                       </td>
                       <td className="px-6 py-3 text-slate-500">{cliente.cnpjCpf}</td>

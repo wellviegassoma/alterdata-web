@@ -30,7 +30,7 @@ export default async function DashboardPage() {
                 <li key={doc.id} className="flex items-center justify-between">
                   <Link href={`/clientes/${doc.cliente.cnpjCpf}`} className="hover:underline">
                     <span className="font-medium text-slate-900">
-                      {doc.cliente.nomeFantasia || doc.cliente.nome || doc.cliente.cnpjCpf}
+                      {doc.cliente.nome || doc.cliente.nomeFantasia || doc.cliente.cnpjCpf}
                     </span>
                     <span className="text-slate-600"> — {doc.tipoDocumento.nome}</span>
                   </Link>
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
               {clientes.map((cliente) => (
                 <li key={cliente.id} className="flex items-center justify-between py-2">
                   <Link href={`/clientes/${cliente.cnpjCpf}`} className="hover:underline">
-                    {cliente.nomeFantasia || cliente.nome || cliente.cnpjCpf}
+                    {cliente.nome || cliente.nomeFantasia || cliente.cnpjCpf}
                   </Link>
                   <span className="text-slate-500">{cliente.status}</span>
                 </li>
