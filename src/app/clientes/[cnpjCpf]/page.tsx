@@ -1,12 +1,21 @@
 import Link from 'next/link';
 import { apiFetch, ApiError } from '@/lib/api';
 import { requireUser } from '@/lib/require-user';
-import type { ClienteCompleto, DocumentoCliente, StatusVencimento, TipoDocumento } from '@/lib/types';
+import type {
+  AcessoCliente,
+  ClienteCompleto,
+  DocumentoCliente,
+  StatusVencimento,
+  TipoDocumento,
+} from '@/lib/types';
 import { AppHeader } from '@/components/AppHeader';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { deleteClienteAction } from '../actions';
 import { DocumentoClienteForm } from './DocumentoClienteForm';
 import { deleteDocumentoClienteAction } from './documentos-actions';
+import { AcessoClienteForm } from './AcessoClienteForm';
+import { AcessoSenhaReveal } from './AcessoSenhaReveal';
+import { deleteAcessoClienteAction } from './acessos-actions';
 
 const STATUS_DOC_ESTILO: Record<StatusVencimento, string> = {
   VENCIDO: 'bg-red-100 text-red-700',
@@ -48,9 +57,10 @@ export default async function ClienteDetalhePage({
   const { econtador, local } = completo;
   const removerComCnpj = deleteClienteAction.bind(null, cnpjCpf);
 
-  const [documentos, tiposDocumento] = await Promise.all([
+  const [documentos, tiposDocumento, acessos] = await Promise.all([
     apiFetch<DocumentoCliente[]>(`/documentos-cliente?clienteId=${local.id}`),
     apiFetch<TipoDocumento[]>('/tipos-documento'),
+    apiFetch<AcessoCliente[]>(`/acessos-cliente?clienteId=${local.id}`),
   ]);
 
   return (
@@ -214,6 +224,55 @@ export default async function ClienteDetalhePage({
                         <form action={remover}>
                           <ConfirmSubmitButton
                             confirmMessage="Remover este documento controlado?"
+                            className="text-xs font-medium text-red-600 hover:underline"
+                          >
+                            Remover
+                          </ConfirmSubmitButton>
+                        </form>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </section>
+
+        <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-1 text-sm font-semibold text-slate-900">Acessos</h2>
+          <p className="mb-4 text-xs text-slate-500">
+            Login e senha de portais desse cliente (gov.br, prefeitura etc.). A senha fica
+            criptografada no banco e só aparece aqui quando você clica em &quot;Mostrar&quot;.
+          </p>
+
+          <AcessoClienteForm clienteId={local.id} cnpjCpf={cnpjCpf} />
+
+          {acessos.length > 0 && (
+            <table className="mt-4 w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-500">
+                  <th className="py-2 font-medium">Portal</th>
+                  <th className="py-2 font-medium">Login</th>
+                  <th className="py-2 font-medium">Senha</th>
+                  <th className="py-2 font-medium">Observações</th>
+                  <th className="py-2 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {acessos.map((acesso) => {
+                  const remover = deleteAcessoClienteAction.bind(null, acesso.id, cnpjCpf);
+                  return (
+                    <tr key={acesso.id} className="border-b border-slate-100 last:border-0">
+                      <td className="py-2 text-slate-900">{acesso.portal}</td>
+                      <td className="py-2 text-slate-600">{acesso.login ?? '—'}</td>
+                      <td className="py-2">
+                        <AcessoSenhaReveal id={acesso.id} />
+                      </td>
+                      <td className="py-2 text-slate-600">{acesso.observacoes ?? '—'}</td>
+                      <td className="py-2 text-right">
+                        <form action={remover}>
+                          <ConfirmSubmitButton
+                            confirmMessage="Remover este acesso?"
                             className="text-xs font-medium text-red-600 hover:underline"
                           >
                             Remover

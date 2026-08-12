@@ -19,6 +19,15 @@ export function AppHeader({ user }: { user: AuthenticatedUser }) {
           <Link href="/tipos-documento" className="text-sm text-slate-600 hover:text-slate-900">
             Tipos de documento
           </Link>
+          <Link href="/obrigacoes" className="text-sm text-slate-600 hover:text-slate-900">
+            Obrigações
+          </Link>
+          <Link href="/obrigacoes-fiscais" className="text-sm text-slate-600 hover:text-slate-900">
+            Tipos de obrigação
+          </Link>
+          <Link href="/analises" className="text-sm text-slate-600 hover:text-slate-900">
+            Análises
+          </Link>
           {user.papel === 'ADMIN' && (
             <>
               <Link href="/usuarios" className="text-sm text-slate-600 hover:text-slate-900">

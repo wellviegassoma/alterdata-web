@@ -139,3 +139,59 @@ export interface DocumentoCliente {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface AcessoCliente {
+  id: string;
+  clienteId: string;
+  portal: string;
+  login: string | null;
+  observacoes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type PeriodicidadeObrigacao = 'MENSAL' | 'ANUAL';
+
+export interface TipoObrigacaoFiscal {
+  id: string;
+  nome: string;
+  periodicidade: PeriodicidadeObrigacao;
+  diaVencimento: number;
+  mesVencimento: number | null;
+  regimesAplicaveis: RegimeTributario[];
+  ativo: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type StatusObrigacao = 'VENCIDO' | 'VENCENDO' | 'OK' | 'CUMPRIDA';
+
+export interface ObrigacaoCliente {
+  id: string;
+  clienteId: string;
+  tipoObrigacaoId: string;
+  competencia: string;
+  dataVencimento: string;
+  cumprida: boolean;
+  cumpridaEm: string | null;
+  observacoes: string | null;
+  tipoObrigacao: TipoObrigacaoFiscal;
+  cliente: { id: string; cnpjCpf: string; nome: string | null; nomeFantasia: string | null; codigo: string | null };
+  status: StatusObrigacao;
+  diasRestantes: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DashboardAnalitico {
+  porStatus: { status: StatusCliente; total: number }[];
+  porRegime: { regime: RegimeTributario | 'NAO_INFORMADO'; total: number }[];
+  porResponsavel: {
+    usuarioId: string;
+    nome: string;
+    fiscal: number;
+    contabil: number;
+    dp: number;
+    total: number;
+  }[];
+}
