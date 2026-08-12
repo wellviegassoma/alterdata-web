@@ -13,6 +13,9 @@ export function AppHeader({ user }: { user: AuthenticatedUser }) {
           <Link href="/clientes" className="text-sm text-slate-600 hover:text-slate-900">
             Clientes
           </Link>
+          <Link href="/tipos-documento" className="text-sm text-slate-600 hover:text-slate-900">
+            Tipos de documento
+          </Link>
           {user.papel === 'ADMIN' && (
             <Link href="/usuarios" className="text-sm text-slate-600 hover:text-slate-900">
               Usuários

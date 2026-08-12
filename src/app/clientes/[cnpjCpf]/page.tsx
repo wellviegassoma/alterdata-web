@@ -1,10 +1,24 @@
 import Link from 'next/link';
 import { apiFetch, ApiError } from '@/lib/api';
 import { requireUser } from '@/lib/require-user';
-import type { ClienteCompleto } from '@/lib/types';
+import type { ClienteCompleto, DocumentoCliente, StatusVencimento, TipoDocumento } from '@/lib/types';
 import { AppHeader } from '@/components/AppHeader';
 import { ConfirmSubmitButton } from '@/components/ConfirmSubmitButton';
 import { deleteClienteAction } from '../actions';
+import { DocumentoClienteForm } from './DocumentoClienteForm';
+import { deleteDocumentoClienteAction } from './documentos-actions';
+
+const STATUS_DOC_ESTILO: Record<StatusVencimento, string> = {
+  VENCIDO: 'bg-red-100 text-red-700',
+  VENCENDO: 'bg-amber-100 text-amber-700',
+  OK: 'bg-emerald-100 text-emerald-700',
+};
+
+const STATUS_DOC_LABEL: Record<StatusVencimento, string> = {
+  VENCIDO: 'Vencido',
+  VENCENDO: 'Vencendo',
+  OK: 'Em dia',
+};
 
 export default async function ClienteDetalhePage({
   params,
@@ -33,6 +47,11 @@ export default async function ClienteDetalhePage({
 
   const { econtador, local } = completo;
   const removerComCnpj = deleteClienteAction.bind(null, cnpjCpf);
+
+  const [documentos, tiposDocumento] = await Promise.all([
+    apiFetch<DocumentoCliente[]>(`/documentos-cliente?clienteId=${local.id}`),
+    apiFetch<TipoDocumento[]>('/tipos-documento'),
+  ]);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -148,6 +167,66 @@ export default async function ClienteDetalhePage({
             <Campo label="Observações" valor={local.contrato.observacoes} />
           </Secao>
         )}
+
+        <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-sm font-semibold text-slate-900">Documentos controlados</h2>
+
+          {tiposDocumento.length === 0 ? (
+            <p className="text-sm text-slate-500">
+              Nenhum tipo de documento cadastrado ainda.{' '}
+              <Link href="/tipos-documento" className="font-medium text-slate-900 hover:underline">
+                Cadastrar tipos de documento
+              </Link>
+              .
+            </p>
+          ) : (
+            <DocumentoClienteForm clienteId={local.id} cnpjCpf={cnpjCpf} tipos={tiposDocumento} />
+          )}
+
+          {documentos.length > 0 && (
+            <table className="mt-4 w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-500">
+                  <th className="py-2 font-medium">Tipo</th>
+                  <th className="py-2 font-medium">Vencimento</th>
+                  <th className="py-2 font-medium">Status</th>
+                  <th className="py-2 font-medium">Observações</th>
+                  <th className="py-2 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {documentos.map((doc) => {
+                  const remover = deleteDocumentoClienteAction.bind(null, doc.id, cnpjCpf);
+                  return (
+                    <tr key={doc.id} className="border-b border-slate-100 last:border-0">
+                      <td className="py-2 text-slate-900">{doc.tipoDocumento.nome}</td>
+                      <td className="py-2 text-slate-600">{doc.dataVencimento.slice(0, 10)}</td>
+                      <td className="py-2">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_DOC_ESTILO[doc.status]}`}
+                        >
+                          {STATUS_DOC_LABEL[doc.status]}
+                          {doc.status !== 'OK' && ` · ${Math.abs(doc.diasRestantes)}d`}
+                        </span>
+                      </td>
+                      <td className="py-2 text-slate-600">{doc.observacoes ?? '—'}</td>
+                      <td className="py-2 text-right">
+                        <form action={remover}>
+                          <ConfirmSubmitButton
+                            confirmMessage="Remover este documento controlado?"
+                            className="text-xs font-medium text-red-600 hover:underline"
+                          >
+                            Remover
+                          </ConfirmSubmitButton>
+                        </form>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </section>
       </main>
     </div>
   );

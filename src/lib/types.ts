@@ -113,3 +113,29 @@ export interface EmpresaResumo {
   cpfCnpjAlfanumerico: string;
   ativa: boolean;
 }
+
+export interface TipoDocumento {
+  id: string;
+  nome: string;
+  periodicidadeMeses: number | null;
+  ativo: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type StatusVencimento = 'VENCIDO' | 'VENCENDO' | 'OK';
+
+export interface DocumentoCliente {
+  id: string;
+  clienteId: string;
+  tipoDocumentoId: string;
+  dataEmissao: string | null;
+  dataVencimento: string;
+  observacoes: string | null;
+  tipoDocumento: TipoDocumento;
+  cliente: { id: string; cnpjCpf: string; nome: string | null; nomeFantasia: string | null; codigo: string | null };
+  status: StatusVencimento;
+  diasRestantes: number;
+  createdAt: string;
+  updatedAt: string;
+}
